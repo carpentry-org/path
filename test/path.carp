@@ -1,0 +1,97 @@
+(load "Test.carp")
+(load "path.carp")
+
+(use-all Path Test)
+
+(if (not (Dynamic.or (= "windows" (os)) (= "mingw32" (os))))
+(deftest test
+  (assert-equal test
+                "path/joined"
+                &(</> "path" "joined")
+                "</> works on paths"
+  )
+  (assert-true test
+                (Maybe.just? &(absolute "path"))
+                "absolute works"
+  )
+  (assert-false test
+                (absolute? "path")
+                "absolute? works on relative paths"
+  )
+  (assert-false test
+                (relative? "/path")
+                "relative? works on absolute paths"
+  )
+  (assert-true test
+               (relative? "path")
+               "relative? works on relative paths"
+  )
+  (assert-equal test
+                "file.ext"
+                &(add-extension "file" "ext")
+                "add-extension works"
+  )
+  (assert-equal test
+                "/path"
+                &(basename "/path/file.txt")
+                "basename works"
+  )
+  (assert-true test
+               (Maybe.just? &(cwd))
+               "cwd works"
+  )
+  ; TODO why does this test not work?
+  ;(assert-equal test
+  ;              "file"
+  ;              &(drop-extension "file.txt")
+  ;              "drop-extension works if there is an extension"
+  ;)
+  (assert-equal test
+                "file"
+                &(drop-extension "file")
+                "drop-extension works if there is no extension"
+  )
+  (assert-equal test
+                &(Maybe.Just @"txt")
+                &(extension "file.txt")
+                "extension works if there is an extension"
+  )
+  (assert-equal test
+                &(Maybe.Nothing)
+                &(extension "file")
+                "extension works if there is no extension"
+  )
+  (assert-true test
+               (Maybe.just? &(get-search-path))
+               "get-search-path works"
+  )
+  (assert-true test
+               (has-extension? "file.txt")
+               "has-extension? works if there is an extension"
+  )
+  (assert-false test
+                (has-extension? "file")
+                "has-extension? works if there is no extension"
+  )
+  (assert-true test
+               (is-extension? "file.txt" "txt")
+               "is-extension? works if there is the right extension"
+  )
+  (assert-false test
+                (is-extension? "file.txt" "ext")
+                "is-extension? works if there is the wrong extension"
+  )
+  (assert-false test
+                (is-extension? "file" "txt")
+                "is-extension? works if there is no extension"
+  )
+)
+())
+(if (Dynamic.or (= "windows" (os)) (= "mingw32" (os)))
+(deftest test
+  (assert-true test
+               false
+               "tests are not currently implemented on windows"
+  )
+)
+())

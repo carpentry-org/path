@@ -1,0 +1,152 @@
+(doc Path "is a simple file path library for Carp.
+
+## Installation
+
+```clojure
+(load \"https://veitheller.de/git/carpentry/path@0.0.1\")
+```
+
+### Usage
+
+The `Path` module mostly operates on `String` arguments. It allows you to
+split, join, and merge paths and extensions in a lot of different ways. It also
+has some functions to work with the `PATH` environment variable.
+
+It assumes either Windows or POSIX-style separators.")
+(defmodule Path
+  (doc absolute? "checks whether a path is absolute.
+
+As such, it is the inverse to [relative](#relative).")
+  (doc separator "is the default separator we use on this OS.")
+  (doc separators "is the possible separators we could use on this OS.")
+  (doc search-path-separator "is the separator for the `PATH` environment
+variable we use on this OS.")
+  (private extension-pat)
+  (hidden extension-pat)
+  (private sep-string)
+  (hidden sep-string)
+  (windows-only
+    (defn absolute? [p] (Pattern.matches? #"[A-Za-z]:\\" p))
+    (def separator \\)
+    (def separators [\/ \\])
+    (def search-path-separator \;)
+    (def extension-pat #"\.[^\\/\.]*$")
+    (def sep-string "\\"))
+  (not-on-windows
+    (defn absolute? [p] (String.starts-with? p "/"))
+    (def separator \/)
+    (def separators [\/])
+    (def search-path-separator \:)
+    (def extension-pat #"\.[^/\.]*$")
+    (def sep-string "/"))
+
+  (doc relative? "checks whether a path is relative.
+
+As such, it is the inverse to [absolute](#absolute).")
+  (defn relative? [p] (not (absolute? p)))
+
+  (doc separator? "checks whether the character `c` is a path separator on this
+OS.")
+  (defn separator? [c] (Array.contains? &separators c))
+  (doc separator? "checks whether the character `c` is a separator for the
+`PATH` environment variable on this OS.")
+  (defn search-path-separator? [c] (= search-path-separator c))
+
+  (doc path-max "defines the maximum path length on this OS.")
+  (register path-max Int "PATH_MAX")
+  (private cwd-)
+  (hidden cwd-)
+  (register cwd- (Fn [String Int] String) "getcwd")
+  (doc cwd "returns the current working directory as a `Maybe`. The ways in
+which it can fail are OS-dependent, but it should happen relatively rare.")
+  (defn cwd []
+    (let [s (String.allocate path-max (Char.from-int 0))
+          r (cwd- s path-max)]
+      (if (null? (cstr &r))
+        (Maybe.Nothing)
+        (Maybe.Just r))))
+
+  (doc </> "joins `before` and `after` using the default path separator.")
+  (defn </> [before after] (fmt "%s%c%s" before separator after))
+
+  (doc split "splits the path `p` into its components.
+
+As such, it is the inverse to [join](#join).")
+  (defn split [p] (String.split-by p &[separator]))
+  (doc join "joins the path components `ps` into a path.
+
+As such, it is the inverse to [split](#split).")
+  (defn join [ps] (String.join sep-string ps))
+
+  (doc filename "gets the filename of the path `p` as a `(Maybe String)`.
+
+It will return `Nothing` if an empty string is passed.")
+  (defn filename [p] (Array.last &(split p)))
+  (doc basename "gets the basename of the path `p`.")
+  (defn basename [p]
+    (let [split (split p)
+          but-last (Array.prefix-array &split (dec (Array.length &split)))]
+      (String.join sep-string &but-last)))
+
+  (doc split-extension "splits the path `p` on its extension.
+
+It will return a `(Maybe (Pair String String))`. `Maybe` because there might not
+be an extension, and `Pair` because it will return the part before and after
+the extension.
+
+Examples on POSIX:
+```
+(split-extension \"file.txt\")
+; => (Maybe.Just (Pair \"file\" \"txt\"))
+(split-extension \"file\")
+; => (Maybe.Nothing)
+(split-extension \"file/file.txt\")
+; => (Maybe.Just (Pair \"file/file\" \"txt\"))
+(split-extension \"file.txt/veit\")
+; => (Maybe.Nothing)
+(split-extension \"file.txt/veit.ext\")
+; => (Maybe.Just (Pair \"file.txt/veit\" \"ext\"))
+(split-extension \"file/path.txt.bob.fred\")
+; => (Maybe.Just (Pair \"file/path.txt.bob\" \"fred\"))
+```")
+  (defn split-extension [p]
+    (let [i (Pattern.find extension-pat p)]
+      (if (= -1 i)
+        (Maybe.Nothing)
+        (Maybe.Just (Pair.init (prefix-string p i) (suffix-string p (inc i)))))))
+
+  (doc extension "gets the extension of a file as a `Maybe`.")
+  (defn extension [p]
+    (Maybe.apply (split-extension p) &(fn [p] @(Pair.b &p))))
+
+  (doc has-extension? "cheks whether the path `p` has an extension.")
+  (defn has-extension? [p] (Maybe.just? &(split-extension p)))
+  (doc is-extension? "checks whether the path `p` has the extension `ext`.")
+  (defn is-extension? [p ext] (= &(extension p) &(Maybe.Just @ext)))
+
+  (doc drop-extension "drops the extension of a path `p`. Does nothing if there
+is none.")
+  (defn drop-extension [p]
+    @(match (split-extension p)
+      (Maybe.Nothing) p
+      (Maybe.Just pair) (Pair.a &pair)))
+
+  (doc add-extension "adds an extension `ext` to a path `p`.")
+  (defn add-extension [p ext] (String.concat &[@p @"." @ext]))
+
+  (doc replace-extension "replaces the extension of a path `p` with `ext`. Adds
+an extension if there previously was none.")
+  (defn replace-extension [p ext] (add-extension &(drop-extension p) ext))
+
+  (doc absolute "makes an absolute path from `p`.")
+  (defn absolute [p]
+    (if (absolute? p)
+      (Maybe.Just @p)
+      (Maybe.apply (cwd) &(fn [d] (join &[d @p])))))
+
+  (doc split-search-path "splits a `PATH` environment variable `p`.")
+  (defn split-search-path [p] (String.split-by p &[search-path-separator]))
+  (doc get-search-path "gets the `PATH` environment variable and splits it.")
+  (defn get-search-path []
+    (Maybe.apply (IO.getenv @"PATH") &(fn [p] (split-search-path &p))))
+)

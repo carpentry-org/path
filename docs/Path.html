@@ -1,0 +1,551 @@
+<!DOCTYPE HTML>
+
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+        <link rel="stylesheet" href="style.css">
+    </head>
+    <body>
+        <div class="content">
+            <div class="logo">
+                <a href="http://github.com/carp-lang/Carp">
+                    <img src="logo.png">
+                </a>
+                <div class="title">
+                    path
+                </div>
+                <div class="index">
+                    <ul>
+                        <li>
+                            <a href="Path.html">
+                                Path
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <h1>
+                Path
+            </h1>
+            <div class="module-description">
+                <p>is a simple file path library for Carp.</p>
+<h2>Installation</h2>
+<pre><code class="language-clojure">(load &quot;https://veitheller.de/git/carpentry/path@0.0.1&quot;)
+</code></pre>
+<h3>Usage</h3>
+<p>The <code>Path</code> module mostly operates on <code>String</code> arguments. It allows you to
+split, join, and merge paths and extensions in a lot of different ways. It also
+has some functions to work with the <code>PATH</code> environment variable.</p>
+<p>It assumes either Windows or POSIX-style separators.</p>
+
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#&lt;/&gt;">
+                    <h3 id="&lt;/&gt;">
+                        &lt;/&gt;
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [a, b] String)
+                </p>
+                <pre class="args">
+                    (&lt;/&gt; before after)
+                </pre>
+                <p class="doc">
+                    <p>joins <code>before</code> and <code>after</code> using the default path separator.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#absolute">
+                    <h3 id="absolute">
+                        absolute
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] (Maybe String))
+                </p>
+                <pre class="args">
+                    (absolute p)
+                </pre>
+                <p class="doc">
+                    <p>makes an absolute path from <code>p</code>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#absolute?">
+                    <h3 id="absolute?">
+                        absolute?
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] Bool)
+                </p>
+                <pre class="args">
+                    (absolute? p)
+                </pre>
+                <p class="doc">
+                    <p>checks whether a path is absolute.</p>
+<p>As such, it is the inverse to <a href="#relative">relative</a>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#add-extension">
+                    <h3 id="add-extension">
+                        add-extension
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String, &amp;String] String)
+                </p>
+                <pre class="args">
+                    (add-extension p ext)
+                </pre>
+                <p class="doc">
+                    <p>adds an extension <code>ext</code> to a path <code>p</code>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#basename">
+                    <h3 id="basename">
+                        basename
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] String)
+                </p>
+                <pre class="args">
+                    (basename p)
+                </pre>
+                <p class="doc">
+                    <p>gets the basename of the path <code>p</code>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#cwd">
+                    <h3 id="cwd">
+                        cwd
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [] (Maybe String))
+                </p>
+                <pre class="args">
+                    (cwd)
+                </pre>
+                <p class="doc">
+                    <p>returns the current working directory as a <code>Maybe</code>. The ways in
+which it can fail are OS-dependent, but it should happen relatively rare.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#drop-extension">
+                    <h3 id="drop-extension">
+                        drop-extension
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] String)
+                </p>
+                <pre class="args">
+                    (drop-extension p)
+                </pre>
+                <p class="doc">
+                    <p>drops the extension of a path <code>p</code>. Does nothing if there
+is none.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#extension">
+                    <h3 id="extension">
+                        extension
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] (Maybe String))
+                </p>
+                <pre class="args">
+                    (extension p)
+                </pre>
+                <p class="doc">
+                    <p>gets the extension of a file as a <code>Maybe</code>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#filename">
+                    <h3 id="filename">
+                        filename
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] (Maybe String))
+                </p>
+                <pre class="args">
+                    (filename p)
+                </pre>
+                <p class="doc">
+                    <p>gets the filename of the path <code>p</code> as a <code>(Maybe String)</code>.</p>
+<p>It will return <code>Nothing</code> if an empty string is passed.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#get-search-path">
+                    <h3 id="get-search-path">
+                        get-search-path
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [] (Maybe (Array String)))
+                </p>
+                <pre class="args">
+                    (get-search-path)
+                </pre>
+                <p class="doc">
+                    <p>gets the <code>PATH</code> environment variable and splits it.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#has-extension?">
+                    <h3 id="has-extension?">
+                        has-extension?
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] Bool)
+                </p>
+                <pre class="args">
+                    (has-extension? p)
+                </pre>
+                <p class="doc">
+                    <p>cheks whether the path <code>p</code> has an extension.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#is-extension?">
+                    <h3 id="is-extension?">
+                        is-extension?
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String, &amp;String] Bool)
+                </p>
+                <pre class="args">
+                    (is-extension? p ext)
+                </pre>
+                <p class="doc">
+                    <p>checks whether the path <code>p</code> has the extension <code>ext</code>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#join">
+                    <h3 id="join">
+                        join
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [(Ref (Array String))] String)
+                </p>
+                <pre class="args">
+                    (join ps)
+                </pre>
+                <p class="doc">
+                    <p>joins the path components <code>ps</code> into a path.</p>
+<p>As such, it is the inverse to <a href="#split">split</a>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#path-max">
+                    <h3 id="path-max">
+                        path-max
+                    </h3>
+                </a>
+                <div class="description">
+                    external
+                </div>
+                <p class="sig">
+                    Int
+                </p>
+                <span>
+                    
+                </span>
+                <p class="doc">
+                    <p>defines the maximum path length on this OS.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#relative?">
+                    <h3 id="relative?">
+                        relative?
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] Bool)
+                </p>
+                <pre class="args">
+                    (relative? p)
+                </pre>
+                <p class="doc">
+                    <p>checks whether a path is relative.</p>
+<p>As such, it is the inverse to <a href="#absolute">absolute</a>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#replace-extension">
+                    <h3 id="replace-extension">
+                        replace-extension
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String, &amp;String] String)
+                </p>
+                <pre class="args">
+                    (replace-extension p ext)
+                </pre>
+                <p class="doc">
+                    <p>replaces the extension of a path <code>p</code> with <code>ext</code>. Adds
+an extension if there previously was none.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#search-path-separator">
+                    <h3 id="search-path-separator">
+                        search-path-separator
+                    </h3>
+                </a>
+                <div class="description">
+                    def
+                </div>
+                <p class="sig">
+                    Char
+                </p>
+                <span>
+                    
+                </span>
+                <p class="doc">
+                    <p>is the separator for the <code>PATH</code> environment
+variable we use on this OS.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#search-path-separator?">
+                    <h3 id="search-path-separator?">
+                        search-path-separator?
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [Char] Bool)
+                </p>
+                <pre class="args">
+                    (search-path-separator? c)
+                </pre>
+                <p class="doc">
+                    
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#separator">
+                    <h3 id="separator">
+                        separator
+                    </h3>
+                </a>
+                <div class="description">
+                    def
+                </div>
+                <p class="sig">
+                    Char
+                </p>
+                <span>
+                    
+                </span>
+                <p class="doc">
+                    <p>is the default separator we use on this OS.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#separator?">
+                    <h3 id="separator?">
+                        separator?
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;Char] Bool)
+                </p>
+                <pre class="args">
+                    (separator? c)
+                </pre>
+                <p class="doc">
+                    <p>checks whether the character <code>c</code> is a separator for the
+<code>PATH</code> environment variable on this OS.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#separators">
+                    <h3 id="separators">
+                        separators
+                    </h3>
+                </a>
+                <div class="description">
+                    def
+                </div>
+                <p class="sig">
+                    (Array Char)
+                </p>
+                <span>
+                    
+                </span>
+                <p class="doc">
+                    <p>is the possible separators we could use on this OS.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#split">
+                    <h3 id="split">
+                        split
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] (Array String))
+                </p>
+                <pre class="args">
+                    (split p)
+                </pre>
+                <p class="doc">
+                    <p>splits the path <code>p</code> into its components.</p>
+<p>As such, it is the inverse to <a href="#join">join</a>.</p>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#split-extension">
+                    <h3 id="split-extension">
+                        split-extension
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] (Maybe (Pair String String)))
+                </p>
+                <pre class="args">
+                    (split-extension p)
+                </pre>
+                <p class="doc">
+                    <p>splits the path <code>p</code> on its extension.</p>
+<p>It will return a <code>(Maybe (Pair String String))</code>. <code>Maybe</code> because there might not
+be an extension, and <code>Pair</code> because it will return the part before and after
+the extension.</p>
+<p>Examples on POSIX:</p>
+<pre><code>(split-extension &quot;file.txt&quot;)
+; =&gt; (Maybe.Just (Pair &quot;file&quot; &quot;txt&quot;))
+(split-extension &quot;file&quot;)
+; =&gt; (Maybe.Nothing)
+(split-extension &quot;file/file.txt&quot;)
+; =&gt; (Maybe.Just (Pair &quot;file/file&quot; &quot;txt&quot;))
+(split-extension &quot;file.txt/veit&quot;)
+; =&gt; (Maybe.Nothing)
+(split-extension &quot;file.txt/veit.ext&quot;)
+; =&gt; (Maybe.Just (Pair &quot;file.txt/veit&quot; &quot;ext&quot;))
+(split-extension &quot;file/path.txt.bob.fred&quot;)
+; =&gt; (Maybe.Just (Pair &quot;file/path.txt.bob&quot; &quot;fred&quot;))
+</code></pre>
+
+                </p>
+            </div>
+            <div class="binder">
+                <a class="anchor" href="#split-search-path">
+                    <h3 id="split-search-path">
+                        split-search-path
+                    </h3>
+                </a>
+                <div class="description">
+                    defn
+                </div>
+                <p class="sig">
+                    (λ [&amp;String] (Array String))
+                </p>
+                <pre class="args">
+                    (split-search-path p)
+                </pre>
+                <p class="doc">
+                    <p>splits a <code>PATH</code> environment variable <code>p</code>.</p>
+
+                </p>
+            </div>
+        </div>
+    </body>
+</html>
