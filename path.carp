@@ -85,7 +85,7 @@ It will return `Nothing` if an empty string is passed.")
   (doc basename "gets the basename of the path `p`.")
   (defn basename [p]
     (let [split (split p)
-          but-last (Array.prefix-array &split (dec (Array.length &split)))]
+          but-last (Array.prefix &split (dec (Array.length &split)))]
       (String.join sep-string &but-last)))
 
   (doc split-extension "splits the path `p` on its extension.
@@ -113,7 +113,7 @@ Examples on POSIX:
     (let [i (Pattern.find extension-pat p)]
       (if (= -1 i)
         (Maybe.Nothing)
-        (Maybe.Just (Pair.init (prefix-string p i) (suffix-string p (inc i)))))))
+        (Maybe.Just (Pair.init (prefix p i) (suffix p (inc i)))))))
 
   (doc extension "gets the extension of a file as a `Maybe`.")
   (defn extension [p]
