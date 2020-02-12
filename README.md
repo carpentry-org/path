@@ -5,7 +5,7 @@ is a simple file path library for Carp.
 ## Installation
 
 ```clojure
-(load "https://veitheller.de/git/carpentry/path@0.0.1")
+(load "https://veitheller.de/git/carpentry/path@0.0.2")
 ```
 
 ### Usage

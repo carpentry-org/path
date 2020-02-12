@@ -31,7 +31,7 @@
             <div class="module-description">
                 <p>is a simple file path library for Carp.</p>
 <h2>Installation</h2>
-<pre><code class="language-clojure">(load &quot;https://veitheller.de/git/carpentry/path@0.0.1&quot;)
+<pre><code class="language-clojure">(load &quot;https://veitheller.de/git/carpentry/path@0.0.2&quot;)
 </code></pre>
 <h3>Usage</h3>
 <p>The <code>Path</code> module mostly operates on <code>String</code> arguments. It allows you to
@@ -70,7 +70,7 @@ has some functions to work with the <code>PATH</code> environment variable.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] (Maybe String))
+                    (λ [(Ref String a)] (Maybe String))
                 </p>
                 <pre class="args">
                     (absolute p)
@@ -90,7 +90,7 @@ has some functions to work with the <code>PATH</code> environment variable.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] Bool)
+                    (λ [(Ref String a)] Bool)
                 </p>
                 <pre class="args">
                     (absolute? p)
@@ -111,7 +111,7 @@ has some functions to work with the <code>PATH</code> environment variable.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String, &amp;String] String)
+                    (λ [(Ref String a), (Ref String b)] String)
                 </p>
                 <pre class="args">
                     (add-extension p ext)
@@ -131,7 +131,7 @@ has some functions to work with the <code>PATH</code> environment variable.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] String)
+                    (λ [(Ref String a)] String)
                 </p>
                 <pre class="args">
                     (basename p)
@@ -172,7 +172,7 @@ which it can fail are OS-dependent, but it should happen relatively rare.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] String)
+                    (λ [(Ref String a)] String)
                 </p>
                 <pre class="args">
                     (drop-extension p)
@@ -193,7 +193,7 @@ is none.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] (Maybe String))
+                    (λ [(Ref String a)] (Maybe String))
                 </p>
                 <pre class="args">
                     (extension p)
@@ -213,7 +213,7 @@ is none.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] (Maybe String))
+                    (λ [(Ref String a)] (Maybe String))
                 </p>
                 <pre class="args">
                     (filename p)
@@ -254,7 +254,7 @@ is none.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] Bool)
+                    (λ [(Ref String a)] Bool)
                 </p>
                 <pre class="args">
                     (has-extension? p)
@@ -274,7 +274,7 @@ is none.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String, &amp;String] Bool)
+                    (λ [(Ref String a), (Ref String b)] Bool)
                 </p>
                 <pre class="args">
                     (is-extension? p ext)
@@ -294,7 +294,7 @@ is none.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [(Ref (Array String))] String)
+                    (λ [(Ref (Array String) a)] String)
                 </p>
                 <pre class="args">
                     (join ps)
@@ -335,7 +335,7 @@ is none.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] Bool)
+                    (λ [(Ref String a)] Bool)
                 </p>
                 <pre class="args">
                     (relative? p)
@@ -356,7 +356,7 @@ is none.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String, &amp;String] String)
+                    (λ [(Ref String a), (Ref String b)] String)
                 </p>
                 <pre class="args">
                     (replace-extension p ext)
@@ -437,7 +437,7 @@ variable we use on this OS.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;Char] Bool)
+                    (λ [(Ref Char StaticLifetime)] Bool)
                 </p>
                 <pre class="args">
                     (separator? c)
@@ -478,7 +478,7 @@ variable we use on this OS.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] (Array String))
+                    (λ [(Ref String a)] (Array String))
                 </p>
                 <pre class="args">
                     (split p)
@@ -499,7 +499,7 @@ variable we use on this OS.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] (Maybe (Pair String String)))
+                    (λ [(Ref String a)] (Maybe (Pair String String)))
                 </p>
                 <pre class="args">
                     (split-extension p)
@@ -536,7 +536,7 @@ the extension.</p>
                     defn
                 </div>
                 <p class="sig">
-                    (λ [&amp;String] (Array String))
+                    (λ [(Ref String a)] (Array String))
                 </p>
                 <pre class="args">
                     (split-search-path p)
