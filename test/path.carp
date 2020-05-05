@@ -3,7 +3,7 @@
 
 (use-all Path Test)
 
-(if (not (dynamic-or (= "windows" (os)) (= "mingw32" (os))))
+(not-on-windows
 (deftest test
   (assert-equal test
                 "path/joined"
@@ -87,7 +87,7 @@
   )
 )
 ())
-(if (dynamic-or (= "windows" (os)) (= "mingw32" (os)))
+(windows-only
 (deftest test
   (assert-true test
                false
