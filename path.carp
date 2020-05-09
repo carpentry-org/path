@@ -16,7 +16,7 @@ It assumes either Windows or POSIX-style separators.")
 (defmodule Path
   (doc absolute? "checks whether a path is absolute.
 
-As such, it is the inverse to [relative](#relative).")
+As such, it is the inverse to [relative?](#relative?).")
   (doc separator "is the default separator we use on this OS.")
   (doc separators "is the possible separators we could use on this OS.")
   (doc search-path-separator "is the separator for the `PATH` environment
@@ -42,7 +42,7 @@ variable we use on this OS.")
 
   (doc relative? "checks whether a path is relative.
 
-As such, it is the inverse to [absolute](#absolute).")
+As such, it is the inverse to [absolute?](#absolute?).")
   (defn relative? [p] (not (absolute? p)))
 
   (doc separator? "checks whether the character `c` is a path separator on this
