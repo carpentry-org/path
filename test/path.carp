@@ -3,7 +3,7 @@
 
 (use-all Path Test)
 
-(not-on-windows
+(posix-only
 (deftest test
   (assert-equal test
                 "path/joined"
@@ -41,11 +41,11 @@
                "cwd works"
   )
   ; TODO why does this test not work?
-  ;(assert-equal test
-  ;              "file"
-  ;              &(drop-extension "file.txt")
-  ;              "drop-extension works if there is an extension"
-  ;)
+  (assert-equal test
+                "file"
+                &(drop-extension "file.txt")
+                "drop-extension works if there is an extension"
+  )
   (assert-equal test
                 "file"
                 &(drop-extension "file")

@@ -32,7 +32,7 @@ variable we use on this OS.")
     (def search-path-separator \;)
     (def extension-pat #"\.[^\\/\.]*$")
     (def sep-string "\\"))
-  (not-on-windows
+  (posix-only
     (defn absolute? [p] (String.starts-with? p "/"))
     (def separator \/)
     (def separators [\/])
@@ -127,9 +127,9 @@ Examples on POSIX:
   (doc drop-extension "drops the extension of a path `p`. Does nothing if there
 is none.")
   (defn drop-extension [p]
-    @(match (split-extension p)
-      (Maybe.Nothing) p
-      (Maybe.Just pair) (Pair.a &pair)))
+    (match (split-extension p)
+      (Maybe.Nothing) @p
+      (Maybe.Just pair) @(Pair.a &pair)))
 
   (doc add-extension "adds an extension `ext` to a path `p`.")
   (defn add-extension [p ext] (String.concat &[@p @"." @ext]))
