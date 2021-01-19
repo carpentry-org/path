@@ -3,7 +3,7 @@
 ## Installation
 
 ```clojure
-(load \"https://veitheller.de/git/carpentry/path@0.0.2\")
+(load \"https://veitheller.de/git/carpentry/path@0.0.3\")
 ```
 
 ### Usage
