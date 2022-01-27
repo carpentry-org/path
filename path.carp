@@ -3,7 +3,7 @@
 ## Installation
 
 ```clojure
-(load \"https://veitheller.de/git/carpentry/path@0.0.3\")
+(load \"git@git.veitheller.de:carpentry/path.git@0.0.4\")
 ```
 
 ### Usage
@@ -148,5 +148,5 @@ an extension if there previously was none.")
   (defn split-search-path [p] (String.split-by p &[search-path-separator]))
   (doc get-search-path "gets the `PATH` environment variable and splits it.")
   (defn get-search-path []
-    (Maybe.apply (IO.getenv @"PATH") &(fn [p] (split-search-path &p))))
+    (Maybe.apply (IO.getenv "PATH") &(fn [p] (split-search-path &p))))
 )
