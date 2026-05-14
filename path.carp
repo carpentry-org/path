@@ -62,9 +62,7 @@ which it can fail are OS-dependent, but it should happen relatively rare.")
   (defn cwd []
     (let [s (String.allocate path-max (Char.from-int 0))
           r (cwd- s path-max)]
-      (if (null? (cstr &r))
-        (Maybe.Nothing)
-        (Maybe.Just r))))
+      (if (null? (cstr &r)) (Maybe.Nothing) (Maybe.Just r))))
 
   (doc </> "joins `before` and `after` using the default path separator.")
   (defn </> [before after] (fmt "%s%c%s" before separator after))
@@ -116,8 +114,7 @@ Examples on POSIX:
         (Maybe.Just (Pair.init (prefix p i) (suffix p (inc i)))))))
 
   (doc extension "gets the extension of a file as a `Maybe`.")
-  (defn extension [p]
-    (Maybe.apply (split-extension p) &(fn [p] @(Pair.b &p))))
+  (defn extension [p] (Maybe.apply (split-extension p) &(fn [p] @(Pair.b &p))))
 
   (doc has-extension? "cheks whether the path `p` has an extension.")
   (defn has-extension? [p] (Maybe.just? &(split-extension p)))
@@ -148,5 +145,4 @@ an extension if there previously was none.")
   (defn split-search-path [p] (String.split-by p &[search-path-separator]))
   (doc get-search-path "gets the `PATH` environment variable and splits it.")
   (defn get-search-path []
-    (Maybe.apply (IO.getenv "PATH") &(fn [p] (split-search-path &p))))
-)
+    (Maybe.apply (IO.getenv "PATH") &(fn [p] (split-search-path &p)))))
