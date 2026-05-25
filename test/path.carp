@@ -16,7 +16,6 @@
       "add-extension works")
     (assert-equal test "/path" &(basename "/path/file.txt") "basename works")
     (assert-true test (Maybe.just? &(cwd)) "cwd works")
-    ; TODO why does this test not work?
     (assert-equal test
       "file"
       &(drop-extension "file.txt")

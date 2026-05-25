@@ -48,8 +48,8 @@ As such, it is the inverse to [absolute?](#absolute?).")
   (doc separator? "checks whether the character `c` is a path separator on this
 OS.")
   (defn separator? [c] (Array.contains? &separators c))
-  (doc separator? "checks whether the character `c` is a separator for the
-`PATH` environment variable on this OS.")
+  (doc search-path-separator? "checks whether the character `c` is a separator
+for the `PATH` environment variable on this OS.")
   (defn search-path-separator? [c] (= search-path-separator c))
 
   (doc path-max "defines the maximum path length on this OS.")
