@@ -47,7 +47,59 @@
       "is-extension? works if there is the wrong extension")
     (assert-false test
       (is-extension? "file" "txt")
-      "is-extension? works if there is no extension"))
+      "is-extension? works if there is no extension")
+    (assert-equal test
+      &[@"path" @"to" @"file"]
+      &(split "path/to/file")
+      "split works")
+    (assert-equal test
+      &[@"" @"usr" @"bin"]
+      &(split "/usr/bin")
+      "split works on absolute paths")
+    (assert-equal test
+      "path/to/file"
+      &(join &[@"path" @"to" @"file"])
+      "join works")
+    (assert-equal test
+      &(Maybe.Just @"file.txt")
+      &(filename "path/to/file.txt")
+      "filename works")
+    (assert-equal test
+      &(Maybe.Just @"")
+      &(filename "")
+      "filename returns empty string for empty path")
+    (assert-equal test
+      &(Maybe.Just (Pair.init @"file" @"txt"))
+      &(split-extension "file.txt")
+      "split-extension works with extension")
+    (assert-equal test
+      &(Maybe.Nothing)
+      &(split-extension "file")
+      "split-extension works without extension")
+    (assert-equal test
+      &(Maybe.Just (Pair.init @"file/path.txt.bob" @"fred"))
+      &(split-extension "file/path.txt.bob.fred")
+      "split-extension gets last extension")
+    (assert-equal test
+      "file.ext"
+      &(replace-extension "file.txt" "ext")
+      "replace-extension works with existing extension")
+    (assert-equal test
+      "file.ext"
+      &(replace-extension "file" "ext")
+      "replace-extension works without existing extension")
+    (assert-true test (separator? &\/) "separator? works for /")
+    (assert-false test (separator? &\a) "separator? works for non-separator")
+    (assert-true test
+      (search-path-separator? \:)
+      "search-path-separator? works for :")
+    (assert-false test
+      (search-path-separator? \;)
+      "search-path-separator? works for non-separator")
+    (assert-equal test
+      &[@"/usr/bin" @"/usr/local/bin"]
+      &(split-search-path "/usr/bin:/usr/local/bin")
+      "split-search-path works"))
   ())
 (windows-only
   (deftest test

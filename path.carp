@@ -116,7 +116,7 @@ Examples on POSIX:
   (doc extension "gets the extension of a file as a `Maybe`.")
   (defn extension [p] (Maybe.apply (split-extension p) &(fn [p] @(Pair.b &p))))
 
-  (doc has-extension? "cheks whether the path `p` has an extension.")
+  (doc has-extension? "checks whether the path `p` has an extension.")
   (defn has-extension? [p] (Maybe.just? &(split-extension p)))
   (doc is-extension? "checks whether the path `p` has the extension `ext`.")
   (defn is-extension? [p ext] (= &(extension p) &(Maybe.Just @ext)))
