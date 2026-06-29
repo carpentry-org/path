@@ -78,7 +78,7 @@ As such, it is the inverse to [split](#split).")
 
   (doc filename "gets the filename of the path `p` as a `(Maybe String)`.
 
-It will return `Nothing` if an empty string is passed.")
+For an empty path, the result is `Just` of an empty string, never `Nothing`.")
   (defn filename [p] (Array.last &(split p)))
   (doc basename "gets the basename of the path `p`.")
   (defn basename [p]
