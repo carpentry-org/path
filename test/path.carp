@@ -65,9 +65,25 @@
       &(filename "path/to/file.txt")
       "filename works")
     (assert-equal test
-      &(Maybe.Just @"")
+      &(Maybe.Just @"c")
+      &(filename "a/b/c")
+      "filename works on nested paths")
+    (assert-equal test
+      &(Maybe.Just @"foo")
+      &(filename "foo")
+      "filename works on a single component")
+    (assert-equal test
+      &(Maybe.Nothing)
       &(filename "")
-      "filename returns empty string for empty path")
+      "filename returns Nothing for an empty path")
+    (assert-equal test
+      &(Maybe.Nothing)
+      &(filename "/")
+      "filename returns Nothing for the root path")
+    (assert-equal test
+      &(Maybe.Nothing)
+      &(filename "foo/")
+      "filename returns Nothing for a directory path")
     (assert-equal test
       &(Maybe.Just (Pair.init @"file" @"txt"))
       &(split-extension "file.txt")
