@@ -78,8 +78,11 @@ As such, it is the inverse to [split](#split).")
 
   (doc filename "gets the filename of the path `p` as a `(Maybe String)`.
 
-For an empty path, the result is `Just` of an empty string, never `Nothing`.")
-  (defn filename [p] (Array.last &(split p)))
+Returns `Nothing` when the path has no filename component: the empty path, a
+bare root like `/`, or a path ending in a separator such as `foo/bar/`.
+Otherwise returns `Just` of the last component.")
+  (defn filename [p]
+    (Maybe.filter (Array.last &(split p)) &(fn [f] (not (String.empty? f)))))
   (doc basename "gets the basename of the path `p`.")
   (defn basename [p]
     (let [split (split p)
