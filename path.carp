@@ -89,6 +89,47 @@ Otherwise returns `Just` of the last component.")
           but-last (Array.prefix &split (dec (Array.length &split)))]
       (String.join sep-string &but-last)))
 
+  (doc normalize "normalizes the path `p` lexically, without touching the
+filesystem.
+
+It collapses repeated separators, drops `.` components, and resolves each `..`
+against the preceding component. Leading `..` components are kept in relative
+paths (they cannot be resolved without a base), and `..` never escapes the root
+of an absolute path. An empty or fully-cancelling relative path normalizes to
+`.`, and the root normalizes to a single separator.
+
+Examples on POSIX:
+```
+(normalize \"a/./b\")    ; => \"a/b\"
+(normalize \"a/b/../c\") ; => \"a/c\"
+(normalize \"//a///b\")  ; => \"/a/b\"
+(normalize \"/a/../..\") ; => \"/\"
+(normalize \"a/../..\")  ; => \"..\"
+(normalize \"\")         ; => \".\"
+```")
+  (defn normalize [p]
+    (if (String.empty? p)
+      @"."
+      (let-do [abs (absolute? p)
+               comps (split p)
+               out []]
+        (for [i 0 (Array.length &comps)]
+          (let [c (Array.unsafe-nth &comps i)]
+            (cond
+              (or (String.empty? c) (= c ".")) ()
+              (= c "..")
+                (let [n (Array.length &out)]
+                  (if (= n 0)
+                    (unless abs (set! out (Array.push-back out @c)))
+                    (if (= (Array.unsafe-nth &out (dec n)) "..")
+                      (set! out (Array.push-back out @c))
+                      (set! out (Array.prefix &out (dec n))))))
+              (set! out (Array.push-back out @c)))))
+        (let [joined (String.join sep-string &out)]
+          (if abs
+            (String.concat &[@sep-string joined])
+            (if (String.empty? &joined) @"." joined))))))
+
   (doc split-extension "splits the path `p` on its extension.
 
 It will return a `(Maybe (Pair String String))`. `Maybe` because there might not

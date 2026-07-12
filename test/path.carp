@@ -60,6 +60,37 @@
       "path/to/file"
       &(join &[@"path" @"to" @"file"])
       "join works")
+    (assert-equal test "a/b" &(normalize "a/./b") "normalize drops . components")
+    (assert-equal test "a/c" &(normalize "a/b/../c") "normalize resolves ..")
+    (assert-equal test
+      "/a/b"
+      &(normalize "//a///b")
+      "normalize collapses repeated separators")
+    (assert-equal test
+      "/"
+      &(normalize "/a/../..")
+      "normalize keeps absolute .. from escaping root")
+    (assert-equal test "/" &(normalize "/") "normalize keeps the root")
+    (assert-equal test
+      ".."
+      &(normalize "a/../..")
+      "normalize keeps a leading .. in a relative path")
+    (assert-equal test
+      "../b"
+      &(normalize "../a/../b")
+      "normalize preserves unresolvable leading ..")
+    (assert-equal test
+      "."
+      &(normalize "")
+      "normalize turns the empty path into .")
+    (assert-equal test
+      "."
+      &(normalize "a/b/../..")
+      "normalize turns a fully-cancelling relative path into .")
+    (assert-equal test
+      "a"
+      &(normalize "a/")
+      "normalize strips a trailing separator")
     (assert-equal test
       &(Maybe.Just @"file.txt")
       &(filename "path/to/file.txt")
