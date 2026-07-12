@@ -119,16 +119,17 @@ Examples on POSIX:
               (or (String.empty? c) (= c ".")) ()
               (= c "..")
                 (let [n (Array.length &out)]
-                  (if (= n 0)
-                    (unless abs (set! out (Array.push-back out @c)))
-                    (if (= (Array.unsafe-nth &out (dec n)) "..")
+                  (cond
+                    (= n 0) (unless abs (set! out (Array.push-back out @c)))
+                    (= (Array.unsafe-nth &out (dec n)) "..")
                       (set! out (Array.push-back out @c))
-                      (set! out (Array.prefix &out (dec n))))))
+                    (set! out (Array.prefix &out (dec n)))))
               (set! out (Array.push-back out @c)))))
         (let [joined (String.join sep-string &out)]
-          (if abs
-            (String.concat &[@sep-string joined])
-            (if (String.empty? &joined) @"." joined))))))
+          (cond
+            abs (String.concat &[@sep-string joined])
+            (String.empty? &joined) @"."
+            joined)))))
 
   (doc split-extension "splits the path `p` on its extension.
 
