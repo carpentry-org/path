@@ -191,6 +191,40 @@ an extension if there previously was none.")
       (Maybe.Just @p)
       (Maybe.apply (cwd) &(fn [d] (join &[d @p])))))
 
+  (doc relative "computes the path to `target` relative to `base`, purely
+lexically. It is the companion to [absolute](#absolute).
+
+Both paths are normalized first, so `.`, `..`, and redundant separators are
+resolved before comparing. Returns `Nothing` when the paths cannot be related
+lexically: one absolute and one relative, or, on Windows, rooted at different
+drives. Equal paths yield `Just \".\"`.")
+  (defn relative [target base]
+    (let [nt (normalize target)
+          nb (normalize base)
+          abs (absolute? &nt)]
+      (if (/= abs (absolute? &nb))
+        (Maybe.Nothing)
+        (let [tc (split &nt)
+              bc (split &nb)]
+          (if (and abs (/= (Array.unsafe-nth &tc 0) (Array.unsafe-nth &bc 0)))
+            (Maybe.Nothing)
+            (let [non-empty? (fn [s] (not (String.empty? s)))
+                  tf (Array.copy-filter &non-empty? &tc)
+                  bf (Array.copy-filter &non-empty? &bc)
+                  tn (Array.length &tf)
+                  bn (Array.length &bf)
+                  common (let-do [k 0]
+                    (while (and (< k tn)
+                                (< k bn)
+                                (= (Array.unsafe-nth &tf k)
+                                   (Array.unsafe-nth &bf k)))
+                      (set! k (inc k)))
+                    k)
+                  ups (Array.replicate (- bn common) "..")
+                  comps (Array.concat &[ups (Array.suffix &tf common)])
+                  joined (join &comps)]
+              (Maybe.Just (if (String.empty? &joined) @"." joined))))))))
+
   (doc split-search-path "splits a `PATH` environment variable `p`.")
   (defn split-search-path [p] (String.split-by p &[search-path-separator]))
   (doc get-search-path "gets the `PATH` environment variable and splits it.")

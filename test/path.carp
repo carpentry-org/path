@@ -92,6 +92,42 @@
       &(normalize "a/")
       "normalize strips a trailing separator")
     (assert-equal test
+      &(Maybe.Just @"c")
+      &(relative "/a/b/c" "/a/b")
+      "relative descends into a subdirectory")
+    (assert-equal test
+      &(Maybe.Just @"..")
+      &(relative "/a/b" "/a/b/c")
+      "relative walks up with ..")
+    (assert-equal test
+      &(Maybe.Just @"../x")
+      &(relative "/a/x" "/a/b")
+      "relative walks up and back down")
+    (assert-equal test
+      &(Maybe.Just @".")
+      &(relative "/a/b" "/a/b")
+      "relative of equal paths is .")
+    (assert-equal test
+      &(Maybe.Just @"../../a/b/c")
+      &(relative "/a/b/c" "/x/y")
+      "relative with no shared components")
+    (assert-equal test
+      &(Maybe.Just @"c")
+      &(relative "/a/./b/../c" "/a")
+      "relative normalizes both paths first")
+    (assert-equal test
+      &(Maybe.Just @"c")
+      &(relative "a/b/c" "a/b")
+      "relative works on relative paths")
+    (assert-equal test
+      &(Maybe.Nothing)
+      &(relative "/a/b" "a/b")
+      "relative returns Nothing for an absolute target and relative base")
+    (assert-equal test
+      &(Maybe.Nothing)
+      &(relative "a/b" "/a/b")
+      "relative returns Nothing for a relative target and absolute base")
+    (assert-equal test
       &(Maybe.Just @"file.txt")
       &(filename "path/to/file.txt")
       "filename works")
