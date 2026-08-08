@@ -364,6 +364,31 @@ separator on POSIX, the drive root such as <code>C:\</code> on Windows).</p>
                     </p>
                 </div>
                 <div class="binder">
+                    <a class="anchor" href="#relative">
+                        <h3 id="relative">
+                            relative
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ref String a), (Ref String b)] (Maybe String))
+                    </p>
+                    <pre class="args">
+                        (relative target base)
+                    </pre>
+                    <p class="doc">
+                        <p>computes the path to <code>target</code> relative to <code>base</code>, purely
+lexically. It is the companion to <a href="#absolute">absolute</a>.</p>
+<p>Both paths are normalized first, so <code>.</code>, <code>..</code>, and redundant separators are
+resolved before comparing. Returns <code>Nothing</code> when the paths cannot be related
+lexically: one absolute and one relative, or, on Windows, rooted at different
+drives. Equal paths yield <code>Just &quot;.&quot;</code>.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
                     <a class="anchor" href="#relative?">
                         <h3 id="relative?">
                             relative?
