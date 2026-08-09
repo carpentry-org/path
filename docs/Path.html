@@ -309,6 +309,74 @@ Otherwise returns <code>Just</code> of the last component.</p>
                     </p>
                 </div>
                 <div class="binder">
+                    <a class="anchor" href="#matches?">
+                        <h3 id="matches?">
+                            matches?
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ref String a), (Ref String b)] Bool)
+                    </p>
+                    <pre class="args">
+                        (matches? p pattern)
+                    </pre>
+                    <p class="doc">
+                        <p>checks whether the path <code>p</code> matches the glob <code>pattern</code>.</p>
+<p>The path comes first, like everywhere else in this module — note that this is
+the opposite of <code>Pattern.matches?</code> in core:</p>
+<pre><code>(matches? &quot;src/main.carp&quot; &quot;src/*.carp&quot;) ; =&gt; true
+</code></pre>
+<p>The pattern language is:</p>
+<pre><code>?        exactly one character, never a separator
+*        zero or more characters, never a separator
+**       zero or more whole segments, as an entire segment
+[abc]    one of the characters in the class
+[a-z]    one character from the range
+[!abc]   one character not in the class ([^abc] works too)
+\*       a literal *, on POSIX (see below)
+</code></pre>
+<p><code>**</code> is only a segment wildcard when it is the whole segment, so <code>**/*.carp</code>
+matches both <code>a.carp</code> and <code>x/y/a.carp</code>, while <code>a**b</code> is just <code>a*b</code>. Inside a
+class, a <code>]</code> directly after the <code>[</code> (or after the <code>!</code>/<code>^</code>) is a literal <code>]</code>, and
+a <code>-</code> first or last is a literal <code>-</code>.</p>
+<p>On POSIX a <code>\</code> escapes the next pattern character. On Windows <code>\</code> is a
+separator, so escaping is disabled there. A trailing <code>\</code> and an unterminated
+<code>[</code> are matched as literal characters, which is why this is a total function and
+not a <code>Result</code>.</p>
+<p>Leading dots are not special: <code>*</code> matches <code>.hidden</code>. Matching happens on the
+path exactly as given, with no normalization and no collapsing of repeated
+separators — run it through <a href="#normalize">normalize</a> first if you want that.</p>
+
+                    </p>
+                </div>
+                <div class="binder">
+                    <a class="anchor" href="#matching">
+                        <h3 id="matching">
+                            matching
+                        </h3>
+                    </a>
+                    <div class="description">
+                        defn
+                    </div>
+                    <p class="sig">
+                        (Fn [(Ref (Array String) a), (Ref String b)] (Array String))
+                    </p>
+                    <pre class="args">
+                        (matching ps pattern)
+                    </pre>
+                    <p class="doc">
+                        <p>keeps the paths in <code>ps</code> that match the glob <code>pattern</code>,
+preserving their order.</p>
+<p>It is <a href="#matches?">matches?</a> over an array, which is usually what you want:</p>
+<pre><code>(matching &amp;[@&quot;a.carp&quot; @&quot;a.c&quot;] &quot;*.carp&quot;) ; =&gt; [@&quot;a.carp&quot;]
+</code></pre>
+
+                    </p>
+                </div>
+                <div class="binder">
                     <a class="anchor" href="#normalize">
                         <h3 id="normalize">
                             normalize

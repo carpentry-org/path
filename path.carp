@@ -25,20 +25,24 @@ variable we use on this OS.")
   (hidden extension-pat)
   (private sep-string)
   (hidden sep-string)
+  (private escapes?)
+  (hidden escapes?)
   (windows-only
     (defn absolute? [p] (Pattern.matches? #"[A-Za-z]:\\" p))
     (def separator \\)
     (def separators [\/ \\])
     (def search-path-separator \;)
     (def extension-pat #"\.[^\\/\.]*$")
-    (def sep-string "\\"))
+    (def sep-string "\\")
+    (def escapes? false))
   (posix-only
     (defn absolute? [p] (String.starts-with? p "/"))
     (def separator \/)
     (def separators [\/])
     (def search-path-separator \:)
     (def extension-pat #"\.[^/\.]*$")
-    (def sep-string "/"))
+    (def sep-string "/")
+    (def escapes? true))
 
   (doc relative? "checks whether a path is relative.
 
@@ -224,6 +228,185 @@ drives. Equal paths yield `Just \".\"`.")
                   comps (Array.concat &[ups (Array.suffix &tf common)])
                   joined (join &comps)]
               (Maybe.Just (if (String.empty? &joined) @"." joined))))))))
+
+  (defn- class-end [pcs i]
+    (let-do [n (Array.length pcs)
+             j (inc i)
+             res -1]
+      (when (and (< j n)
+                 (let [c @(Array.unsafe-nth pcs j)] (or (= c \!) (= c \^))))
+        (set! j (inc j)))
+      (when (and (< j n) (= @(Array.unsafe-nth pcs j) \])) (set! j (inc j)))
+      (while-do (and (= res -1) (< j n))
+        (let [c @(Array.unsafe-nth pcs j)]
+          (cond
+            (= c \]) (set! res (inc j))
+            (and escapes? (= c \\) (< (inc j) n)) (set! j (+ j 2))
+            (set! j (inc j)))))
+      res))
+
+  (defn- class-matches? [pcs i end c]
+    (let-do [j (inc i)
+             last (dec end)
+             neg false
+             found false]
+      (when-do (and (< j last)
+                    (let [m @(Array.unsafe-nth pcs j)] (or (= m \!) (= m \^))))
+        (set! neg true)
+        (set! j (inc j)))
+      (while-do (< j last)
+        (let-do [lo @(Array.unsafe-nth pcs j)]
+          (set! j (inc j))
+          (when-do (and escapes? (= lo \\) (< j last))
+            (set! lo @(Array.unsafe-nth pcs j))
+            (set! j (inc j)))
+          (if (and (< (inc j) last) (= @(Array.unsafe-nth pcs j) \-))
+            (let-do [hi @(Array.unsafe-nth pcs (inc j))]
+              (set! j (+ j 2))
+              (when-do (and escapes? (= hi \\) (< j last))
+                (set! hi @(Array.unsafe-nth pcs j))
+                (set! j (inc j)))
+              (when (and (<= lo c) (<= c hi)) (set! found true)))
+            (when (= lo c) (set! found true)))))
+      (if neg (not found) found)))
+
+  (defn- item-end [pcs i]
+    (let [n (Array.length pcs)
+          c @(Array.unsafe-nth pcs i)]
+      (cond
+        (and escapes? (= c \\) (< (inc i) n)) (+ i 2)
+        (= c \[) (let [e (class-end pcs i)] (if (= e -1) (inc i) e))
+        (inc i))))
+
+  (defn- item-matches? [pcs i c]
+    (let [n (Array.length pcs)
+          pc @(Array.unsafe-nth pcs i)]
+      (cond
+        (and escapes? (= pc \\) (< (inc i) n))
+          (= @(Array.unsafe-nth pcs (inc i)) c)
+        (= pc \?) true
+        (= pc \[)
+          (let [e (class-end pcs i)]
+            (if (= e -1) (= pc c) (class-matches? pcs i e c)))
+        (= pc c))))
+
+  (defn- star? [pcs i] (= @(Array.unsafe-nth pcs i) \*))
+
+  (defn- segment-matches? [scs pcs]
+    (let-do [pn (Array.length pcs)
+             sn (Array.length scs)
+             p 0
+             s 0
+             star -1
+             mark 0
+             ok true]
+      (while-do (and ok (< s sn))
+        (cond
+          (and (< p pn) (star? pcs p))
+            (do (set! star p) (set! mark s) (set! p (inc p)))
+          (and (< p pn) (item-matches? pcs p @(Array.unsafe-nth scs s)))
+            (do (set! p (item-end pcs p)) (set! s (inc s)))
+          (<= 0 star)
+            (do (set! mark (inc mark)) (set! s mark) (set! p (inc star)))
+          (set! ok false)))
+      (while-do (and ok (< p pn) (star? pcs p)) (set! p (inc p)))
+      (and ok (= p pn))))
+
+  (defn- segment [cs escape?]
+    (let-do [n (Array.length cs)
+             out []
+             cur []
+             i 0]
+      (while-do (< i n)
+        (let [c @(Array.unsafe-nth cs i)]
+          (cond
+            (and escape? (= c \\) (< (inc i) n))
+              (do
+                (set! cur (Array.push-back cur c))
+                (set! cur (Array.push-back cur @(Array.unsafe-nth cs (inc i))))
+                (set! i (+ i 2)))
+            (separator? &c)
+              (do
+                (set! out (Array.push-back out @&cur))
+                (set! cur [])
+                (set! i (inc i)))
+            (do (set! cur (Array.push-back cur c)) (set! i (inc i))))))
+      (Array.push-back out cur)))
+
+  (defn- globstar? [seg]
+    (and (= 2 (Array.length seg)) (star? seg 0) (star? seg 1)))
+
+  (defn- path-matches? [ss ps]
+    (let-do [pn (Array.length ps)
+             sn (Array.length ss)
+             p 0
+             s 0
+             star -1
+             mark 0
+             ok true]
+      (while-do (and ok (< s sn))
+        (cond
+          (and (< p pn) (globstar? (Array.unsafe-nth ps p)))
+            (do (set! star p) (set! mark s) (set! p (inc p)))
+          (and (< p pn)
+               (segment-matches? (Array.unsafe-nth ss s) (Array.unsafe-nth ps p)))
+            (do (set! p (inc p)) (set! s (inc s)))
+          (<= 0 star)
+            (do (set! mark (inc mark)) (set! s mark) (set! p (inc star)))
+          (set! ok false)))
+      (while-do (and ok (< p pn) (globstar? (Array.unsafe-nth ps p)))
+        (set! p (inc p)))
+      (and ok (= p pn))))
+
+  (doc matches? "checks whether the path `p` matches the glob `pattern`.
+
+The path comes first, like everywhere else in this module — note that this is
+the opposite of `Pattern.matches?` in core:
+```
+(matches? \"src/main.carp\" \"src/*.carp\") ; => true
+```
+
+The pattern language is:
+```
+?        exactly one character, never a separator
+*        zero or more characters, never a separator
+**       zero or more whole segments, as an entire segment
+[abc]    one of the characters in the class
+[a-z]    one character from the range
+[!abc]   one character not in the class ([^abc] works too)
+\\*       a literal *, on POSIX (see below)
+```
+
+`**` is only a segment wildcard when it is the whole segment, so `**/*.carp`
+matches both `a.carp` and `x/y/a.carp`, while `a**b` is just `a*b`. Inside a
+class, a `]` directly after the `[` (or after the `!`/`^`) is a literal `]`, and
+a `-` first or last is a literal `-`.
+
+On POSIX a `\\` escapes the next pattern character. On Windows `\\` is a
+separator, so escaping is disabled there. A trailing `\\` and an unterminated
+`[` are matched as literal characters, which is why this is a total function and
+not a `Result`.
+
+Leading dots are not special: `*` matches `.hidden`. Matching happens on the
+path exactly as given, with no normalization and no collapsing of repeated
+separators — run it through [normalize](#normalize) first if you want that.")
+  (defn matches? [p pattern]
+    (path-matches? &(segment &(String.chars p) false)
+                   &(segment &(String.chars pattern) escapes?)))
+
+  (doc matching "keeps the paths in `ps` that match the glob `pattern`,
+preserving their order.
+
+It is [matches?](#matches?) over an array, which is usually what you want:
+```
+(matching &[@\"a.carp\" @\"a.c\"] \"*.carp\") ; => [@\"a.carp\"]
+```")
+  (defn matching [ps pattern]
+    (let-do [out []]
+      (for [i 0 (Array.length ps)]
+        (let [p (Array.unsafe-nth ps i)]
+          (when (matches? p pattern) (set! out (Array.push-back out @p)))))
+      out))
 
   (doc split-search-path "splits a `PATH` environment variable `p`.")
   (defn split-search-path [p] (String.split-by p &[search-path-separator]))
