@@ -346,6 +346,9 @@ a <code>-</code> first or last is a literal <code>-</code>.</p>
 separator, so escaping is disabled there. A trailing <code>\</code> and an unterminated
 <code>[</code> are matched as literal characters, which is why this is a total function and
 not a <code>Result</code>.</p>
+<p>Separators are structural and cannot be escaped away: <code>a\/b</code> splits into
+segments just like <code>a/b</code>, and a class holding one, such as <code>[a/]</code>, matches its
+other members but never the separator.</p>
 <p>Leading dots are not special: <code>*</code> matches <code>.hidden</code>. Matching happens on the
 path exactly as given, with no normalization and no collapsing of repeated
 separators — run it through <a href="#normalize">normalize</a> first if you want that.</p>

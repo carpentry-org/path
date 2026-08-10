@@ -285,6 +285,33 @@
     (assert-false test
       (matches? "a" "[abc")
       "matches? does not read an unterminated [ as a class")
+    (assert-true test
+      (matches? "a/b" "a\\/b")
+      "matches? splits on an escaped separator like a plain one")
+    (assert-true test
+      (matches? "/a" "\\/a")
+      "matches? splits on a leading escaped separator")
+    (assert-false test
+      (matches? "a/b/c" "a\\/b")
+      "matches? does not let an escaped separator match a whole path")
+    (assert-true test
+      (matches? "a" "[a/]")
+      "matches? does not split a class that holds a separator")
+    (assert-true test
+      (matches? "abc" "[!/]*")
+      "matches? does not split a negated class that holds a separator")
+    (assert-false test
+      (matches? "/" "[a/]")
+      "matches? never matches a separator with a class")
+    (assert-false test
+      (matches? "a/b" "a[/]b")
+      "matches? keeps a class in one segment")
+    (assert-true test
+      (matches? "[a/b" "[a/b")
+      "matches? splits on a separator in an unterminated class")
+    (assert-true test
+      (matches? "c/b" "[!a]/b")
+      "matches? splits on a separator after a class")
     (assert-true test (matches? "" "") "matches? matches two empty strings")
     (assert-false test
       (matches? "a" "")

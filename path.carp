@@ -312,24 +312,31 @@ drives. Equal paths yield `Just \".\"`.")
       (while-do (and ok (< p pn) (star? pcs p)) (set! p (inc p)))
       (and ok (= p pn))))
 
-  (defn- segment [cs escape?]
+  (defn- segment [cs pattern?]
     (let-do [n (Array.length cs)
              out []
              cur []
              i 0]
       (while-do (< i n)
-        (let [c @(Array.unsafe-nth cs i)]
+        (let [c @(Array.unsafe-nth cs i)
+              esc (and pattern? escapes? (= c \\) (< (inc i) n))
+              nxt (if esc @(Array.unsafe-nth cs (inc i)) c)
+              cend (if (and pattern? (= c \[)) (class-end cs i) -1)]
           (cond
-            (and escape? (= c \\) (< (inc i) n))
+            (and esc (not (separator? &nxt)))
               (do
                 (set! cur (Array.push-back cur c))
-                (set! cur (Array.push-back cur @(Array.unsafe-nth cs (inc i))))
+                (set! cur (Array.push-back cur nxt))
                 (set! i (+ i 2)))
-            (separator? &c)
+            (/= cend -1)
+              (while-do (< i cend)
+                (set! cur (Array.push-back cur @(Array.unsafe-nth cs i)))
+                (set! i (inc i)))
+            (separator? &nxt)
               (do
                 (set! out (Array.push-back out @&cur))
                 (set! cur [])
-                (set! i (inc i)))
+                (set! i (if esc (+ i 2) (inc i))))
             (do (set! cur (Array.push-back cur c)) (set! i (inc i))))))
       (Array.push-back out cur)))
 
@@ -387,12 +394,16 @@ separator, so escaping is disabled there. A trailing `\\` and an unterminated
 `[` are matched as literal characters, which is why this is a total function and
 not a `Result`.
 
+Separators are structural and cannot be escaped away: `a\\/b` splits into
+segments just like `a/b`, and a class holding one, such as `[a/]`, matches its
+other members but never the separator.
+
 Leading dots are not special: `*` matches `.hidden`. Matching happens on the
 path exactly as given, with no normalization and no collapsing of repeated
 separators — run it through [normalize](#normalize) first if you want that.")
   (defn matches? [p pattern]
     (path-matches? &(segment &(String.chars p) false)
-                   &(segment &(String.chars pattern) escapes?)))
+                   &(segment &(String.chars pattern) true)))
 
   (doc matching "keeps the paths in `ps` that match the glob `pattern`,
 preserving their order.

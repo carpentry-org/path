@@ -47,7 +47,9 @@ matches both `a.carp` and `x/y/a.carp`, while `a**b` is just `a*b`. On POSIX a
 `\` escapes the next pattern character; on Windows `\` is a separator, so
 escaping is disabled there. A trailing `\` and an unterminated `[` are matched
 as literal characters, which is why `matches?` is a plain `Bool` and not a
-`Result`.
+`Result`. Separators are structural and cannot be escaped away: `a\/b` splits
+into segments just like `a/b`, and a class holding one, such as `[a/]`, matches
+its other members but never the separator.
 
 Leading dots are not special: `*` matches `.hidden`. Matching happens on the
 path exactly as given, with no normalization, so run it through `normalize`
