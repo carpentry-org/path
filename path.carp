@@ -270,29 +270,41 @@ drives. Equal paths yield `Just \".\"`.")
             (when (= lo c) (set! found true)))))
       (if neg (not found) found)))
 
-  (defn- item-end [pcs i]
-    (let [n (Array.length pcs)
-          c @(Array.unsafe-nth pcs i)]
-      (cond
-        (and escapes? (= c \\) (< (inc i) n)) (+ i 2)
-        (= c \[) (let [e (class-end pcs i)] (if (= e -1) (inc i) e))
-        (inc i))))
+  ; the first `[` whose class never closes; every later one is unterminated too
+  (defn- dead-class [pcs]
+    (let-do [n (Array.length pcs)
+             i 0
+             res -1]
+      (while-do (and (= res -1) (< i n))
+        (let [c @(Array.unsafe-nth pcs i)]
+          (cond
+            (and escapes? (= c \\) (< (inc i) n)) (set! i (+ i 2))
+            (= c \[)
+              (let [e (class-end pcs i)] (if (= e -1) (set! res i) (set! i e)))
+            (set! i (inc i)))))
+      res))
 
-  (defn- item-matches? [pcs i c]
+  (defn- dead? [dead i] (and (<= 0 dead) (>= i dead)))
+
+  ; index just past the item at `i` when it matches `c`, -1 when it does not
+  (defn- item-match-end [pcs i dead c]
     (let [n (Array.length pcs)
           pc @(Array.unsafe-nth pcs i)]
       (cond
         (and escapes? (= pc \\) (< (inc i) n))
-          (= @(Array.unsafe-nth pcs (inc i)) c)
-        (= pc \?) true
-        (= pc \[)
+          (if (= @(Array.unsafe-nth pcs (inc i)) c) (+ i 2) -1)
+        (= pc \?) (inc i)
+        (and (= pc \[) (not (dead? dead i)))
           (let [e (class-end pcs i)]
-            (if (= e -1) (= pc c) (class-matches? pcs i e c)))
-        (= pc c))))
+            (cond
+              (= e -1) (if (= pc c) (inc i) -1)
+              (class-matches? pcs i e c) e
+              -1))
+        (if (= pc c) (inc i) -1))))
 
   (defn- star? [pcs i] (= @(Array.unsafe-nth pcs i) \*))
 
-  (defn- segment-matches? [scs pcs]
+  (defn- segment-matches? [scs pcs dead]
     (let-do [pn (Array.length pcs)
              sn (Array.length scs)
              p 0
@@ -301,14 +313,16 @@ drives. Equal paths yield `Just \".\"`.")
              mark 0
              ok true]
       (while-do (and ok (< s sn))
-        (cond
-          (and (< p pn) (star? pcs p))
-            (do (set! star p) (set! mark s) (set! p (inc p)))
-          (and (< p pn) (item-matches? pcs p @(Array.unsafe-nth scs s)))
-            (do (set! p (item-end pcs p)) (set! s (inc s)))
-          (<= 0 star)
-            (do (set! mark (inc mark)) (set! s mark) (set! p (inc star)))
-          (set! ok false)))
+        (let [end (if (< p pn)
+                (item-match-end pcs p dead @(Array.unsafe-nth scs s))
+                -1)]
+          (cond
+            (and (< p pn) (star? pcs p))
+              (do (set! star p) (set! mark s) (set! p (inc p)))
+            (<= 0 end) (do (set! p end) (set! s (inc s)))
+            (<= 0 star)
+              (do (set! mark (inc mark)) (set! s mark) (set! p (inc star)))
+            (set! ok false))))
       (while-do (and ok (< p pn) (star? pcs p)) (set! p (inc p)))
       (and ok (= p pn))))
 
@@ -349,6 +363,7 @@ drives. Equal paths yield `Just \".\"`.")
   (defn- path-matches? [ss ps]
     (let-do [pn (Array.length ps)
              sn (Array.length ss)
+             deads (Array.copy-map &dead-class ps)
              p 0
              s 0
              star -1
@@ -359,7 +374,9 @@ drives. Equal paths yield `Just \".\"`.")
           (and (< p pn) (globstar? (Array.unsafe-nth ps p)))
             (do (set! star p) (set! mark s) (set! p (inc p)))
           (and (< p pn)
-               (segment-matches? (Array.unsafe-nth ss s) (Array.unsafe-nth ps p)))
+               (segment-matches? (Array.unsafe-nth ss s)
+                                 (Array.unsafe-nth ps p)
+                                 @(Array.unsafe-nth &deads p)))
             (do (set! p (inc p)) (set! s (inc s)))
           (<= 0 star)
             (do (set! mark (inc mark)) (set! s mark) (set! p (inc star)))
