@@ -182,7 +182,182 @@
     (assert-equal test
       &[@"/usr/bin" @"/usr/local/bin"]
       &(split-search-path "/usr/bin:/usr/local/bin")
-      "split-search-path works"))
+      "split-search-path works")
+    (assert-true test (matches? "a.carp" "a.carp") "matches? matches a literal")
+    (assert-false test
+      (matches? "a.carp" "a.car")
+      "matches? rejects a literal mismatch")
+    (assert-true test
+      (matches? "a.carp" "?.carp")
+      "matches? matches ? against one character")
+    (assert-false test
+      (matches? "ab.carp" "?.carp")
+      "matches? does not match ? against two characters")
+    (assert-false test
+      (matches? "" "?")
+      "matches? does not match ? against nothing")
+    (assert-true test
+      (matches? "abc.carp" "*.carp")
+      "matches? matches * against many characters")
+    (assert-true test (matches? "" "*") "matches? matches * against nothing")
+    (assert-true test
+      (matches? "src/main.carp" "src/*.carp")
+      "matches? matches segment by segment")
+    (assert-false test
+      (matches? "a/b" "a*b")
+      "matches? does not let * cross a separator")
+    (assert-false test
+      (matches? "a/b" "a?b")
+      "matches? does not let ? cross a separator")
+    (assert-false test
+      (matches? "a/b/c" "*")
+      "matches? does not match * against a nested path")
+    (assert-true test
+      (matches? "a.carp" "**/*.carp")
+      "matches? matches a leading ** against zero segments")
+    (assert-true test
+      (matches? "x/y/a.carp" "**/*.carp")
+      "matches? matches a leading ** against many segments")
+    (assert-true test
+      (matches? "a/b" "a/**/b")
+      "matches? matches an inner ** against zero segments")
+    (assert-true test
+      (matches? "a/x/y/b" "a/**/b")
+      "matches? matches an inner ** against many segments")
+    (assert-true test
+      (matches? "a" "a/**")
+      "matches? matches a trailing ** against zero segments")
+    (assert-true test (matches? "a/b/c" "a/**") "matches? matches a trailing **")
+    (assert-false test
+      (matches? "a/b" "x/**")
+      "matches? rejects a ** pattern with the wrong prefix")
+    (assert-true test
+      (matches? "axxb" "a**b")
+      "matches? treats a partial ** as a plain *")
+    (assert-false test
+      (matches? "a/b" "a**b")
+      "matches? does not let a partial ** cross a separator")
+    (assert-true test (matches? "abc" "[abc]bc") "matches? matches a class")
+    (assert-false test
+      (matches? "dbc" "[abc]bc")
+      "matches? rejects a character outside a class")
+    (assert-true test (matches? "m" "[a-z]") "matches? matches a range")
+    (assert-false test
+      (matches? "M" "[a-z]")
+      "matches? rejects a character outside a range")
+    (assert-true test (matches? "d" "[!abc]") "matches? negates a class with !")
+    (assert-false test
+      (matches? "a" "[!abc]")
+      "matches? rejects a member of a negated class")
+    (assert-true test (matches? "d" "[^abc]") "matches? negates a class with ^")
+    (assert-false test (matches? "b" "[^a-c]") "matches? negates a range")
+    (assert-true test
+      (matches? "]" "[]]")
+      "matches? reads a leading ] in a class as a literal")
+    (assert-true test
+      (matches? "a" "[]a]")
+      "matches? keeps reading a class after a literal ]")
+    (assert-false test
+      (matches? "]" "[!]a]")
+      "matches? reads a ] after a negation as a class member")
+    (assert-true test
+      (matches? "b" "[!]a]")
+      "matches? terminates a negated class at the second ]")
+    (assert-true test
+      (matches? "-" "[a-]")
+      "matches? reads a trailing - in a class as a literal")
+    (assert-false test
+      (matches? "b" "[a-]")
+      "matches? does not read a trailing - as a range")
+    (assert-true test
+      (matches? "-" "[-a]")
+      "matches? reads a leading - in a class as a literal")
+    (assert-true test (matches? "*" "\\*") "matches? escapes a * into a literal")
+    (assert-false test
+      (matches? "a" "\\*")
+      "matches? does not let an escaped * match another character")
+    (assert-true test
+      (matches? "[abc]" "\\[abc]")
+      "matches? escapes a [ into a literal")
+    (assert-true test
+      (matches? "[abc" "[abc")
+      "matches? reads an unterminated [ as a literal")
+    (assert-false test
+      (matches? "a" "[abc")
+      "matches? does not read an unterminated [ as a class")
+    (assert-true test
+      (matches? "[a[b" "[a[b")
+      "matches? reads a [ after an unterminated [ as a literal too")
+    (assert-true test
+      (matches? "a/b" "a\\/b")
+      "matches? splits on an escaped separator like a plain one")
+    (assert-true test
+      (matches? "/a" "\\/a")
+      "matches? splits on a leading escaped separator")
+    (assert-false test
+      (matches? "a/b/c" "a\\/b")
+      "matches? does not let an escaped separator match a whole path")
+    (assert-true test
+      (matches? "a" "[a/]")
+      "matches? does not split a class that holds a separator")
+    (assert-true test
+      (matches? "abc" "[!/]*")
+      "matches? does not split a negated class that holds a separator")
+    (assert-false test
+      (matches? "/" "[a/]")
+      "matches? never matches a separator with a class")
+    (assert-false test
+      (matches? "a/b" "a[/]b")
+      "matches? keeps a class in one segment")
+    (assert-true test
+      (matches? "[a/b" "[a/b")
+      "matches? splits on a separator in an unterminated class")
+    (assert-true test
+      (matches? "c/b" "[!a]/b")
+      "matches? splits on a separator after a class")
+    (assert-true test (matches? "" "") "matches? matches two empty strings")
+    (assert-false test
+      (matches? "a" "")
+      "matches? rejects an empty pattern against a non-empty path")
+    (assert-false test
+      (matches? "" "a")
+      "matches? rejects a non-empty pattern against an empty path")
+    (assert-true test
+      (matches? ".hidden" "*")
+      "matches? does not treat a leading dot as special")
+    (assert-true test
+      (matches? "ü" "?")
+      "matches? matches ? against a multi-byte character")
+    (assert-false test
+      (matches? "grüße.txt" "gr??ße.*")
+      "matches? counts characters, not bytes")
+    (assert-true test
+      (matches? "ü" "[üö]")
+      "matches? matches a class against a multi-byte character")
+    (assert-false test
+      (matches? "a" "[üö]")
+      "matches? rejects a character outside a multi-byte class")
+    (assert-false test
+      (matches? "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" "*a*a*a*a*a*a*b")
+      "matches? backtracks linearly")
+    (assert-equal test
+      &[@"a.carp" @"d.carp"]
+      &(matching &[@"a.carp" @"b.c" @"d.carp"] "*.carp")
+      "matching keeps the matching paths in order")
+    (assert-equal test
+      &[@"test/a.carp" @"test/b/c.carp"]
+      &(matching
+        &[@"test/a.carp" @"src/a.carp" @"test/b/c.carp"]
+        "test/**/*.carp")
+      "matching filters a nested listing")
+    (assert-equal test
+      &(the (Array String) [])
+      &(matching &[@"a.carp"] "*.rs")
+      "matching returns an empty array if nothing matches")
+    (assert-equal test
+      &(the (Array String) [])
+      &(matching &(the (Array String) []) "*")
+      "matching handles an empty array"))
   ())
 (windows-only
   (deftest test
