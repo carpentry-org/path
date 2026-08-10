@@ -316,12 +316,15 @@ drives. Equal paths yield `Just \".\"`.")
     (let-do [n (Array.length cs)
              out []
              cur []
-             i 0]
+             i 0
+             classes? pattern?]
       (while-do (< i n)
-        (let [c @(Array.unsafe-nth cs i)
-              esc (and pattern? escapes? (= c \\) (< (inc i) n))
-              nxt (if esc @(Array.unsafe-nth cs (inc i)) c)
-              cend (if (and pattern? (= c \[)) (class-end cs i) -1)]
+        (let-do [c @(Array.unsafe-nth cs i)
+                 esc (and pattern? escapes? (= c \\) (< (inc i) n))
+                 nxt (if esc @(Array.unsafe-nth cs (inc i)) c)
+                 cend (if (and classes? (= c \[)) (class-end cs i) -1)]
+          ; once a `[` is unterminated every later one is too
+          (when (and (= c \[) (= cend -1)) (set! classes? false))
           (cond
             (and esc (not (separator? &nxt)))
               (do

@@ -286,6 +286,9 @@
       (matches? "a" "[abc")
       "matches? does not read an unterminated [ as a class")
     (assert-true test
+      (matches? "[a[b" "[a[b")
+      "matches? reads a [ after an unterminated [ as a literal too")
+    (assert-true test
       (matches? "a/b" "a\\/b")
       "matches? splits on an escaped separator like a plain one")
     (assert-true test
