@@ -14,7 +14,11 @@ The `Path` module mostly operates on `String` arguments. It allows you to
 split, join, merge, and normalize paths and extensions in a lot of different
 ways. `normalize` resolves `.`/`..` segments and collapses repeated separators
 lexically (without touching the filesystem), and `relative` expresses one path
-relative to a base the same way. It also has some functions to work with the
+relative to a base the same way. `relative` answers `Nothing` when there is no
+lexical answer: one path absolute and the other relative, different Windows
+drives, or a base that still starts with `..` once the shared prefix is gone, as
+in `(Path.relative "a" "../b")`, where naming `a` would take the name of a
+directory neither path mentions. It also has some functions to work with the
 `PATH` environment variable.
 
 It assumes either Windows or POSIX-style separators.

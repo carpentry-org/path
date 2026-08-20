@@ -199,9 +199,21 @@ an extension if there previously was none.")
 lexically. It is the companion to [absolute](#absolute).
 
 Both paths are normalized first, so `.`, `..`, and redundant separators are
-resolved before comparing. Returns `Nothing` when the paths cannot be related
-lexically: one absolute and one relative, or, on Windows, rooted at different
-drives. Equal paths yield `Just \".\"`.")
+resolved before comparing. Equal paths yield `Just \".\"`.
+
+Returns `Nothing` when the paths cannot be related lexically: one absolute and
+one relative; on Windows, rooted at different drives; or a `base` that still
+starts with `..` once the shared prefix is gone, because naming `target` from
+there would take the name of a directory neither path mentions.
+
+Examples on POSIX:
+```
+(relative \"a/b/c\" \"a/b\") ; => (Maybe.Just \"c\")
+(relative \"a\" \".\")       ; => (Maybe.Just \"a\")
+(relative \".\" \"a\")       ; => (Maybe.Just \"..\")
+(relative \"../a\" \"b\")    ; => (Maybe.Just \"../../a\")
+(relative \"a\" \"../b\")    ; => (Maybe.Nothing)
+```")
   (defn relative [target base]
     (let [nt (normalize target)
           nb (normalize base)
@@ -212,9 +224,9 @@ drives. Equal paths yield `Just \".\"`.")
               bc (split &nb)]
           (if (and abs (/= (Array.unsafe-nth &tc 0) (Array.unsafe-nth &bc 0)))
             (Maybe.Nothing)
-            (let [non-empty? (fn [s] (not (String.empty? s)))
-                  tf (Array.copy-filter &non-empty? &tc)
-                  bf (Array.copy-filter &non-empty? &bc)
+            (let [component? (fn [s] (and (not (String.empty? s)) (/= s ".")))
+                  tf (Array.copy-filter &component? &tc)
+                  bf (Array.copy-filter &component? &bc)
                   tn (Array.length &tf)
                   bn (Array.length &bf)
                   common (let-do [k 0]
@@ -223,11 +235,13 @@ drives. Equal paths yield `Just \".\"`.")
                                 (= (Array.unsafe-nth &tf k)
                                    (Array.unsafe-nth &bf k)))
                       (set! k (inc k)))
-                    k)
-                  ups (Array.replicate (- bn common) "..")
-                  comps (Array.concat &[ups (Array.suffix &tf common)])
-                  joined (join &comps)]
-              (Maybe.Just (if (String.empty? &joined) @"." joined))))))))
+                    k)]
+              (if (and (< common bn) (= (Array.unsafe-nth &bf common) ".."))
+                (Maybe.Nothing)
+                (let [ups (Array.replicate (- bn common) "..")
+                      comps (Array.concat &[ups (Array.suffix &tf common)])
+                      joined (join &comps)]
+                  (Maybe.Just (if (String.empty? &joined) @"." joined))))))))))
 
   (defn- class-end [pcs i]
     (let-do [n (Array.length pcs)
