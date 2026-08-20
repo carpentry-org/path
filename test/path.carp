@@ -10,6 +10,9 @@
     (assert-false test (absolute? "path") "absolute? works on relative paths")
     (assert-false test (relative? "/path") "relative? works on absolute paths")
     (assert-true test (relative? "path") "relative? works on relative paths")
+    (assert-false test
+      (absolute? &(String.from-bytes &[187b]))
+      "absolute? works on a path that is a lone UTF-8 continuation byte")
     (assert-equal test
       "file.ext"
       &(add-extension "file" "ext")
