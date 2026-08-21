@@ -36,7 +36,7 @@ variable we use on this OS.")
     (def sep-string "\\")
     (def escapes? false))
   (posix-only
-    (defn absolute? [p] (String.starts-with? p "/"))
+    (defn absolute? [p] (and (not (String.empty? p)) (= \/ (String.head p))))
     (def separator \/)
     (def separators [\/])
     (def search-path-separator \:)
@@ -165,7 +165,9 @@ Examples on POSIX:
     (let [i (Pattern.find extension-pat p)]
       (if (= -1 i)
         (Maybe.Nothing)
-        (Maybe.Just (Pair.init (prefix p i) (suffix p (inc i)))))))
+        (Maybe.Just
+          (Pair.init (String.byte-slice p 0 i)
+                     (String.byte-slice p (inc i) (String.length p)))))))
 
   (doc extension "gets the extension of a file as a `Maybe`.")
   (defn extension [p] (Maybe.apply (split-extension p) &(fn [p] @(Pair.b &p))))

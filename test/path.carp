@@ -10,6 +10,9 @@
     (assert-false test (absolute? "path") "absolute? works on relative paths")
     (assert-false test (relative? "/path") "relative? works on absolute paths")
     (assert-true test (relative? "path") "relative? works on relative paths")
+    (assert-false test
+      (absolute? &(String.from-bytes &[187b]))
+      "absolute? works on a path that is a lone UTF-8 continuation byte")
     (assert-equal test
       "file.ext"
       &(add-extension "file" "ext")
@@ -191,6 +194,21 @@
       &(Maybe.Just (Pair.init @"file/path.txt.bob" @"fred"))
       &(split-extension "file/path.txt.bob.fred")
       "split-extension gets last extension")
+    (assert-equal test
+      &(Maybe.Just (Pair.init @"ä" @"txt"))
+      &(split-extension "ä.txt")
+      "split-extension splits at the dot in a multi-byte filename")
+    (assert-equal test
+      &(Maybe.Just (Pair.init @"grüße" @"c"))
+      &(split-extension "grüße.c")
+      "split-extension keeps the extension of a multi-byte filename")
+    (assert-true test
+      (is-extension? "ä.txt" "txt")
+      "is-extension? works on a multi-byte filename")
+    (assert-equal test
+      &(Maybe.Just (Pair.init (String.from-bytes &[187b 187b]) @""))
+      &(split-extension &(String.from-bytes &[187b 187b 46b]))
+      "split-extension works on a path of UTF-8 continuation bytes")
     (assert-equal test
       "file.ext"
       &(replace-extension "file.txt" "ext")
