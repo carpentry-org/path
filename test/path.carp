@@ -128,6 +128,34 @@
       &(relative "a/b" "/a/b")
       "relative returns Nothing for a relative target and absolute base")
     (assert-equal test
+      &(Maybe.Just @"a")
+      &(relative "a" ".")
+      "relative descends from a . base")
+    (assert-equal test
+      &(Maybe.Just @"..")
+      &(relative "." "a")
+      "relative walks up to a . target")
+    (assert-equal test
+      &(Maybe.Just @"..")
+      &(relative ".." ".")
+      "relative walks up from a . base")
+    (assert-equal test
+      &(Maybe.Just @"../../a")
+      &(relative "../a" "b")
+      "relative resolves a target above the base")
+    (assert-equal test
+      &(Maybe.Just @"../a")
+      &(relative "../a" "../b")
+      "relative cancels leading .. shared by both paths")
+    (assert-equal test
+      &(Maybe.Nothing)
+      &(relative "a" "..")
+      "relative returns Nothing for a base above the current directory")
+    (assert-equal test
+      &(Maybe.Nothing)
+      &(relative "a" "../b")
+      "relative returns Nothing for a base whose residual starts with ..")
+    (assert-equal test
       &(Maybe.Just @"file.txt")
       &(filename "path/to/file.txt")
       "filename works")

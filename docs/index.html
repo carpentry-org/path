@@ -453,9 +453,18 @@ separator on POSIX, the drive root such as <code>C:\</code> on Windows).</p>
                         <p>computes the path to <code>target</code> relative to <code>base</code>, purely
 lexically. It is the companion to <a href="#absolute">absolute</a>.</p>
 <p>Both paths are normalized first, so <code>.</code>, <code>..</code>, and redundant separators are
-resolved before comparing. Returns <code>Nothing</code> when the paths cannot be related
-lexically: one absolute and one relative, or, on Windows, rooted at different
-drives. Equal paths yield <code>Just &quot;.&quot;</code>.</p>
+resolved before comparing. Equal paths yield <code>Just &quot;.&quot;</code>.</p>
+<p>Returns <code>Nothing</code> when the paths cannot be related lexically: one absolute and
+one relative; on Windows, rooted at different drives; or a <code>base</code> that still
+starts with <code>..</code> once the shared prefix is gone, because naming <code>target</code> from
+there would take the name of a directory neither path mentions.</p>
+<p>Examples on POSIX:</p>
+<pre><code>(relative &quot;a/b/c&quot; &quot;a/b&quot;) ; =&gt; (Maybe.Just &quot;c&quot;)
+(relative &quot;a&quot; &quot;.&quot;)       ; =&gt; (Maybe.Just &quot;a&quot;)
+(relative &quot;.&quot; &quot;a&quot;)       ; =&gt; (Maybe.Just &quot;..&quot;)
+(relative &quot;../a&quot; &quot;b&quot;)    ; =&gt; (Maybe.Just &quot;../../a&quot;)
+(relative &quot;a&quot; &quot;../b&quot;)    ; =&gt; (Maybe.Nothing)
+</code></pre>
 
                     </p>
                 </div>
