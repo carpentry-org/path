@@ -3,10 +3,29 @@
 
 (use-all Path Test)
 
+(register chdir (Fn [(Ptr CChar)] Int))
+
+(defn absolute-from-root [p]
+  (let-do [here (Maybe.from (cwd) @".")]
+    (ignore (chdir (cstr "/")))
+    (let-do [res (absolute p)] (ignore (chdir (cstr &here))) res)))
+
 (posix-only
   (deftest test
     (assert-equal test "path/joined" &(</> "path" "joined") "</> works on paths")
     (assert-true test (Maybe.just? &(absolute "path")) "absolute works")
+    (assert-equal test
+      &(Maybe.apply (cwd) &(fn [d] (fmt "%s/foo" &d)))
+      &(absolute "foo")
+      "absolute prefixes the working directory")
+    (assert-equal test
+      &(Maybe.Just @"/foo")
+      &(absolute-from-root "foo")
+      "absolute does not double the separator at the root")
+    (assert-equal test
+      &(Maybe.Just @"/usr")
+      &(absolute-from-root "/usr")
+      "absolute keeps an absolute path at the root")
     (assert-false test (absolute? "path") "absolute? works on relative paths")
     (assert-false test (relative? "/path") "relative? works on absolute paths")
     (assert-true test (relative? "path") "relative? works on relative paths")

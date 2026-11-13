@@ -195,7 +195,10 @@ an extension if there previously was none.")
   (defn absolute [p]
     (if (absolute? p)
       (Maybe.Just @p)
-      (Maybe.apply (cwd) &(fn [d] (join &[d @p])))))
+      (Maybe.apply (cwd)
+                   &(fn [d]
+                     (let [c (String.char-at &d (dec (String.length &d)))]
+                       (if (separator? &c) (String.append &d p) (join &[d @p])))))))
 
   (doc relative "computes the path to `target` relative to `base`, purely
 lexically. It is the companion to [absolute](#absolute).
